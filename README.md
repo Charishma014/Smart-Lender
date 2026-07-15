@@ -332,7 +332,12 @@ Returns the last N prediction records from MongoDB.
 
 ---
 
+## Demo Video
 
+🎥 Watch the project demonstration here:
+
+https://drive.google.com/file/d/1wZ1x2AU5gzWZl48bRhnV6dG0MYICt177/view?usp=sharing
+---
 
 ## 📄 License
 
