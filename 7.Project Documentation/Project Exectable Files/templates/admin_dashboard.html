@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Underwriting Portfolio Analytics | Smart Lender</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <!-- Chart.js for interactive analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="{{ url_for('home') }}" class="brand">Smart<span>Lender</span></a>
+      <div class="nav-links">
+        <a href="{{ url_for('home') }}" class="nav-link active">Admin Dashboard</a>
+        <a href="{{ url_for('logout') }}" class="nav-link" style="color: var(--rose);">Logout</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1>Underwriting Portfolio Analytics</h1>
+      <p>Credit scoring metrics, prediction databases, and model diagnostics. Access level: <strong>Bank Underwriter</strong>.</p>
+    </div>
+
+    <!-- MongoDB Connection Warning -->
+    {% if not db_connected %}
+    <div class="card" style="border-left: 4px solid var(--rose); margin-bottom: 24px; padding: 16px;">
+      <h4 style="color: var(--rose);">MongoDB Connection Warning</h4>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
+        Could not connect to MongoDB. Ensure MongoDB is running at <strong>mongodb://localhost:27017/</strong>.
+      </p>
+    </div>
+    {% endif %}
+
+    <!-- Key Metrics Grid -->
+    <div class="metrics-grid">
+      <div class="card primary-border">
+        <div class="card-title">Total Logs</div>
+        <div class="card-value">{{ total_apps }}</div>
+        <div class="card-desc">Submitted across system</div>
+      </div>
+      <div class="card primary-border">
+        <div class="card-title">Portfolio Approval</div>
+        <div class="card-value">{{ approval_rate }}%</div>
+        <div class="card-desc">Approved vs total submissions</div>
+      </div>
+      <div class="card primary-border">
+        <div class="card-title">Avg Income Profile</div>
+        <div class="card-value">${{ "{:,.0f}".format(avg_income) }}</div>
+        <div class="card-desc">Applicant + Coapplicant</div>
+      </div>
+      <div class="card primary-border">
+        <div class="card-title">Avg Requested Loan</div>
+        <div class="card-value">${{ "{:,.0f}".format(avg_loan * 1000) }}</div>
+        <div class="card-desc">Principal requested size</div>
+      </div>
+    </div>
+
+    <!-- Dashboard Content Grid -->
+    <div class="dashboard-layout">
+      <!-- Left Column: Chart.js visualizations & Database Table -->
+      <div class="left-column" style="display: flex; flex-direction: column; gap: 28px;">
+        <!-- Charts Grid -->
+        <div class="charts-grid">
+          <div class="chart-card">
+            <h3>Credit History vs Approval</h3>
+            <div class="chart-wrapper">
+              <canvas id="creditChart"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <h3>Approval by Property Area</h3>
+            <div class="chart-wrapper">
+              <canvas id="propertyChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Global Predictions Log Table -->
+        <div class="chart-card">
+          <h3 style="margin-bottom: 12px;">Global Prediction Audits</h3>
+          <div class="data-table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Applicant</th>
+                  <th>Income</th>
+                  <th>Loan Amount</th>
+                  <th>Credit History</th>
+                  <th>Decision</th>
+                  <th>Confidence</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for log in recent_logs %}
+                <tr>
+                  <td>{{ log.timestamp.strftime('%Y-%m-%d %H:%M') if log.timestamp else 'N/A' }}</td>
+                  <td class="bold">{{ log.username if log.username else 'Anonymous' }}</td>
+                  <td>${{ "{:,.0f}".format(log.applicant_income + log.coapplicant_income) }}</td>
+                  <td>${{ "{:,.0f}".format(log.loan_amount * 1000) }}</td>
+                  <td>{{ 'Meets Guidelines' if log.credit_history == 1.0 else 'Does Not Meet' }}</td>
+                  <td>
+                    <span class="badge {{ 'approved' if log.approved else 'denied' }}">
+                      {{ 'Approved' if log.approved else 'Denied' }}
+                    </span>
+                  </td>
+                  <td class="bold">{{ log.confidence }}%</td>
+                </tr>
+                {% else %}
+                <tr>
+                  <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                    No logs recorded in MongoDB predictions database yet.
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Model Performance Details & Developer Info -->
+      <div class="right-column" style="display: flex; flex-direction: column; gap: 28px;">
+        <!-- Classifier Accuracy Card -->
+        <div class="card">
+          <h3 style="font-size: 1.1rem; color: var(--primary); margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">Model Accuracy</h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+            The active model is <strong>{{ model_name }}</strong>, selected dynamically based on test set accuracy performance.
+          </p>
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            {% for name, r in train_results.items() %}
+            <div style="border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 600;">
+                <span>{{ name }}</span>
+                <span style="color: var(--accent);">{{ r.test_accuracy }}%</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+                <span>Train: {{ r.train_accuracy }}%</span>
+                {% if name == model_name %}
+                <span class="badge approved" style="padding: 1px 6px; font-size: 0.65rem;">Active</span>
+                {% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- ML Performance Plots -->
+        <div class="card">
+          <h3 style="font-size: 1.1rem; color: var(--primary); margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">Evaluation Plots</h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">
+            View visual validation files plotted during training.
+          </p>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <a href="/static/model_metrics/confusion_matrix.png" target="_blank" style="font-size: 0.85rem; color: var(--accent); text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 6px;">
+              <span>&#128202;</span> Confusion Matrix (PNG)
+            </a>
+            <a href="/static/model_metrics/roc_curve.png" target="_blank" style="font-size: 0.85rem; color: var(--accent); text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 6px;">
+              <span>&#128200;</span> ROC Curve Comparison (PNG)
+            </a>
+          </div>
+        </div>
+
+        <!-- REST API Developer Reference -->
+        <div class="card">
+          <h3 style="font-size: 1.1rem; color: var(--primary); margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">REST API Reference</h3>
+          <p style="font-size: 0.82rem; color: var(--text-muted);">
+            Send applicant criteria to predict eligibility from remote services.
+          </p>
+          <div class="code-title">POST /api/predict</div>
+          <div class="code-block" style="font-size: 0.72rem; padding: 10px; border-radius: 6px;">
+{
+  "gender": "Male",
+  "married": "Yes",
+  "dependents": "0",
+  "education": "Graduate",
+  "self_employed": "No",
+  "applicant_income": 5000,
+  "coapplicant_income": 1500,
+  "loan_amount": 150,
+  "loan_amount_term": 360,
+  "credit_history": 1.0,
+  "property_area": "Urban"
+}
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>Smart Lender &middot; Underwriter Admin Control Center</footer>
+
+  <!-- Setup Dashboard Charts using Chart.js -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // 1. Credit History vs Approval Chart
+      const creditCtx = document.getElementById('creditChart').getContext('2d');
+      new Chart(creditCtx, {
+        type: 'bar',
+        data: {
+          labels: ['Meets Guidelines (1.0)', 'Does Not Meet (0.0)'],
+          datasets: [
+            {
+              label: 'Approved',
+              data: [
+                {{ approval_by_credit.credit_1_approved }},
+                {{ approval_by_credit.credit_0_approved }}
+              ],
+              backgroundColor: '#10b981',
+              borderRadius: 4
+            },
+            {
+              label: 'Denied',
+              data: [
+                {{ approval_by_credit.credit_1_denied }},
+                {{ approval_by_credit.credit_0_denied }}
+              ],
+              backgroundColor: '#f43f5e',
+              borderRadius: 4
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top' }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { precision: 0 }
+            }
+          }
+        }
+      });
+
+      // 2. Property Area vs Approval Chart
+      const propertyCtx = document.getElementById('propertyChart').getContext('2d');
+      new Chart(propertyCtx, {
+        type: 'bar',
+        data: {
+          labels: ['Rural', 'Semiurban', 'Urban'],
+          datasets: [
+            {
+              label: 'Approved',
+              data: [
+                {{ approval_by_property.Rural.Y }},
+                {{ approval_by_property.Semiurban.Y }},
+                {{ approval_by_property.Urban.Y }}
+              ],
+              backgroundColor: '#3b82f6',
+              borderRadius: 4
+            },
+            {
+              label: 'Denied',
+              data: [
+                {{ approval_by_property.Rural.N }},
+                {{ approval_by_property.Semiurban.N }},
+                {{ approval_by_property.Urban.N }}
+              ],
+              backgroundColor: '#94a3b8',
+              borderRadius: 4
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top' }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { precision: 0 }
+            }
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>

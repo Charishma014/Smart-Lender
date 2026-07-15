@@ -1,0 +1,69 @@
+{
+    "features": [
+        "Gender",
+        "Married",
+        "Dependents",
+        "Education",
+        "Self_Employed",
+        "Property_Area",
+        "ApplicantIncome",
+        "CoapplicantIncome",
+        "LoanAmount",
+        "Loan_Amount_Term",
+        "Credit_History"
+    ],
+    "categorical_features": [
+        "Gender",
+        "Married",
+        "Dependents",
+        "Education",
+        "Self_Employed",
+        "Property_Area"
+    ],
+    "numeric_features": [
+        "ApplicantIncome",
+        "CoapplicantIncome",
+        "LoanAmount",
+        "Loan_Amount_Term",
+        "Credit_History"
+    ],
+    "target": "Loan_Status",
+    "best_model": "XGBoost",
+    "used_real_xgboost": true,
+    "results": {
+        "Decision Tree": {
+            "train_accuracy": 93.06,
+            "test_accuracy": 68.29,
+            "best_params": {
+                "max_depth": 10,
+                "min_samples_split": 2
+            }
+        },
+        "Random Forest": {
+            "train_accuracy": 99.37,
+            "test_accuracy": 69.92,
+            "best_params": {
+                "max_depth": 10,
+                "min_samples_split": 2,
+                "n_estimators": 200
+            }
+        },
+        "KNN": {
+            "train_accuracy": 100.0,
+            "test_accuracy": 64.23,
+            "best_params": {
+                "n_neighbors": 3,
+                "weights": "distance"
+            }
+        },
+        "XGBoost": {
+            "train_accuracy": 99.87,
+            "test_accuracy": 70.73,
+            "best_params": {
+                "learning_rate": 0.1,
+                "max_depth": 5,
+                "n_estimators": 200
+            }
+        }
+    }
+}

@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual Environment
+venv/
+env/
+.venv/
+
+# Environment Variables (sensitive - do not commit)
+.env
+
+# Logs
+app.log
+*.log
+
+# Model artifacts (large binary files)
+model/pipeline.pkl
+
+# Data files (may contain sensitive info)
+data/loan_data.csv
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Misc directory that was created incorrectly
+{data,templates,static,model}/

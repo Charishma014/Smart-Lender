@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loan Application | SmartLender</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    body { background: #f1f5f9; }
+
+    .app-hero {
+      background: linear-gradient(135deg, #0f172a, #1e3a5f);
+      color: #fff; padding: 36px 24px 28px; text-align: center;
+    }
+    .app-hero h1 { font-size: 1.6rem; font-weight: 800; margin-bottom: 6px; }
+    .app-hero p { color: #94a3b8; font-size: 0.9rem; }
+
+    /* Stepper */
+    .stepper-wrap { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 20px 24px; }
+    .stepper { max-width: 700px; margin: 0 auto; display: flex; align-items: center; gap: 0; }
+    .step-item { display: flex; align-items: center; flex: 1; }
+    .step-bubble {
+      width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; font-weight: 700; border: 2px solid #e2e8f0;
+      background: #f8fafc; color: #94a3b8; transition: all 0.3s;
+    }
+    .step-bubble.active { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+    .step-bubble.done { background: #10b981; color: #fff; border-color: #10b981; }
+    .step-line { flex: 1; height: 2px; background: #e2e8f0; transition: background 0.3s; }
+    .step-line.done { background: #10b981; }
+    .step-label { font-size: 0.72rem; text-align: center; margin-top: 6px; color: #94a3b8; font-weight: 600; }
+    .step-label.active { color: #3b82f6; }
+    .step-label.done { color: #10b981; }
+    .step-col { display: flex; flex-direction: column; align-items: center; }
+
+    /* Form container */
+    .form-page { max-width: 720px; margin: 32px auto; padding: 0 20px 80px; }
+    .form-panel {
+      background: #fff; border-radius: 20px; padding: 40px 40px 36px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      display: none;
+    }
+    .form-panel.active { display: block; }
+    @media (max-width: 600px) { .form-panel { padding: 28px 22px 24px; } }
+
+    .panel-title { font-size: 1.2rem; font-weight: 800; color: #0f172a; margin-bottom: 6px; }
+    .panel-sub { font-size: 0.88rem; color: #64748b; margin-bottom: 28px; line-height: 1.5; }
+
+    /* Field groups */
+    .fgroup { margin-bottom: 22px; }
+    .fgroup label { display: block; font-size: 0.85rem; font-weight: 700; color: #374151; margin-bottom: 8px; }
+    .fgroup .hint { font-size: 0.78rem; color: #94a3b8; margin-bottom: 8px; margin-top: -4px; }
+    .fgroup input, .fgroup select {
+      width: 100%; padding: 13px 16px;
+      border: 1.5px solid #e2e8f0; border-radius: 11px;
+      font-size: 0.95rem; font-family: inherit; color: #0f172a;
+      background: #f8fafc; transition: all 0.2s;
+    }
+    .fgroup input:focus, .fgroup select:focus {
+      outline: none; border-color: #3b82f6; background: #fff;
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+    }
+    .fgroup input::placeholder { color: #cbd5e1; }
+
+    /* Toggle buttons for yes/no style */
+    .toggle-group { display: flex; gap: 12px; }
+    .toggle-btn {
+      flex: 1; padding: 13px; border: 1.5px solid #e2e8f0; border-radius: 11px;
+      background: #f8fafc; font-size: 0.9rem; font-weight: 600; cursor: pointer;
+      color: #64748b; transition: all 0.2s; text-align: center; font-family: inherit;
+    }
+    .toggle-btn.selected { border-color: #3b82f6; background: #eff6ff; color: #1d4ed8; }
+    .toggle-btn:hover:not(.selected) { border-color: #cbd5e1; background: #f1f5f9; }
+
+    /* Icon options */
+    .option-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+    .option-btn {
+      padding: 14px 10px; border: 1.5px solid #e2e8f0; border-radius: 12px;
+      background: #f8fafc; cursor: pointer; text-align: center; transition: all 0.2s; font-family: inherit;
+    }
+    .option-btn .opt-icon { font-size: 1.4rem; margin-bottom: 6px; }
+    .option-btn .opt-label { font-size: 0.82rem; font-weight: 600; color: #374151; }
+    .option-btn.selected { border-color: #3b82f6; background: #eff6ff; }
+    .option-btn.selected .opt-label { color: #1d4ed8; }
+    .option-btn:hover:not(.selected) { border-color: #cbd5e1; }
+
+    /* Range input */
+    input[type="range"] {
+      width: 100%; height: 6px; background: #e2e8f0; border-radius: 99px;
+      accent-color: #3b82f6; cursor: pointer; padding: 0; border: none;
+    }
+    .range-display { font-size: 1.4rem; font-weight: 800; color: #3b82f6; margin: 8px 0 4px; }
+    .range-labels { display: flex; justify-content: space-between; font-size: 0.75rem; color: #94a3b8; }
+
+    /* Navigation buttons */
+    .panel-nav { display: flex; gap: 12px; margin-top: 32px; }
+    .btn-prev {
+      flex: 1; padding: 13px; border: 1.5px solid #e2e8f0;
+      border-radius: 11px; background: #f8fafc; color: #374151;
+      font-size: 0.95rem; font-weight: 600; cursor: pointer; font-family: inherit;
+      transition: all 0.2s;
+    }
+    .btn-prev:hover { border-color: #cbd5e1; background: #f1f5f9; }
+    .btn-next {
+      flex: 2; padding: 13px;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: #fff; border: none; border-radius: 11px;
+      font-size: 0.95rem; font-weight: 700; cursor: pointer; font-family: inherit;
+      box-shadow: 0 4px 12px rgba(59,130,246,0.3); transition: all 0.2s;
+    }
+    .btn-next:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(59,130,246,0.4); }
+    .btn-submit {
+      width: 100%; padding: 15px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff; border: none; border-radius: 11px;
+      font-size: 1.05rem; font-weight: 700; cursor: pointer; font-family: inherit;
+      box-shadow: 0 4px 14px rgba(16,185,129,0.35); transition: all 0.2s; margin-top: 32px;
+    }
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16,185,129,0.45); }
+
+    /* Summary panel */
+    .summary-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+    .summary-table tr { border-bottom: 1px solid #f1f5f9; }
+    .summary-table tr:last-child { border-bottom: none; }
+    .summary-table td { padding: 11px 4px; font-size: 0.88rem; }
+    .summary-table td:first-child { color: #64748b; font-weight: 600; width: 55%; }
+    .summary-table td:last-child { color: #0f172a; font-weight: 700; }
+
+    /* Loader */
+    .loader-overlay {
+      position: fixed; inset: 0;
+      background: rgba(15,23,42,0.88);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    }
+    .loader-overlay.active { opacity: 1; pointer-events: auto; }
+    .spinner { width: 54px; height: 54px; border: 5px solid rgba(255,255,255,0.15); border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loader-text { color: #fff; font-size: 1.1rem; font-weight: 600; }
+    .loader-sub { color: #94a3b8; font-size: 0.85rem; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="{{ url_for('home') }}" class="brand">Smart<span>Lender</span></a>
+      <div class="nav-links">
+        <a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
+        <a href="{{ url_for('loan_info') }}" class="nav-link">Loan Guide</a>
+        <a href="{{ url_for('logout') }}" class="nav-link" style="color:var(--rose);">Logout</a>
+      </div>
+    </nav>
+  </header>
+
+  <div class="app-hero">
+    <h1>📝 Loan Eligibility Application</h1>
+    <p>Answer a few simple questions and get your result instantly</p>
+  </div>
+
+  <!-- Stepper -->
+  <div class="stepper-wrap">
+    <div class="stepper">
+      <div class="step-col">
+        <div class="step-bubble active" id="bubble-1">1</div>
+        <div class="step-label active" id="label-1">About You</div>
+      </div>
+      <div class="step-line" id="line-1"></div>
+      <div class="step-col">
+        <div class="step-bubble" id="bubble-2">2</div>
+        <div class="step-label" id="label-2">Income</div>
+      </div>
+      <div class="step-line" id="line-2"></div>
+      <div class="step-col">
+        <div class="step-bubble" id="bubble-3">3</div>
+        <div class="step-label" id="label-3">Loan Details</div>
+      </div>
+      <div class="step-line" id="line-3"></div>
+      <div class="step-col">
+        <div class="step-bubble" id="bubble-4">4</div>
+        <div class="step-label" id="label-4">Review</div>
+      </div>
+    </div>
+  </div>
+
+  <form action="{{ url_for('submit') }}" method="POST" id="loanForm">
+    <!-- Hidden inputs for toggle/option selections -->
+    <input type="hidden" name="gender" id="h_gender" value="Male">
+    <input type="hidden" name="married" id="h_married" value="No">
+    <input type="hidden" name="dependents" id="h_dependents" value="0">
+    <input type="hidden" name="education" id="h_education" value="Graduate">
+    <input type="hidden" name="self_employed" id="h_self_employed" value="No">
+    <input type="hidden" name="property_area" id="h_property_area" value="Urban">
+    <input type="hidden" name="credit_history" id="h_credit_history" value="1">
+
+    <div class="form-page">
+
+      <!-- STEP 1: About You -->
+      <div class="form-panel active" id="panel-1">
+        <div class="panel-title">Step 1: Tell Us About Yourself</div>
+        <div class="panel-sub">This basic information helps us calculate the right loan options for you.</div>
+
+        <div class="fgroup">
+          <label>What is your gender?</label>
+          <div class="toggle-group">
+            <button type="button" class="toggle-btn selected" onclick="selectToggle('gender', 'Male', this)">👨 Male</button>
+            <button type="button" class="toggle-btn" onclick="selectToggle('gender', 'Female', this)">👩 Female</button>
+          </div>
+        </div>
+
+        <div class="fgroup">
+          <label>Are you married?</label>
+          <div class="toggle-group">
+            <button type="button" class="toggle-btn" onclick="selectToggle('married', 'Yes', this)">💍 Yes, Married</button>
+            <button type="button" class="toggle-btn selected" onclick="selectToggle('married', 'No', this)">🧍 No, Single</button>
+          </div>
+        </div>
+
+        <div class="fgroup">
+          <label>How many dependents do you have?</label>
+          <div class="hint">Dependents are people financially depending on you (children, parents, etc.)</div>
+          <div class="option-grid">
+            <button type="button" class="option-btn selected" onclick="selectOption('dependents', '0', this)">
+              <div class="opt-icon">🧑</div><div class="opt-label">None (0)</div>
+            </button>
+            <button type="button" class="option-btn" onclick="selectOption('dependents', '1', this)">
+              <div class="opt-icon">👨‍👦</div><div class="opt-label">1 Person</div>
+            </button>
+            <button type="button" class="option-btn" onclick="selectOption('dependents', '2', this)">
+              <div class="opt-icon">👨‍👧‍👦</div><div class="opt-label">2 People</div>
+            </button>
+            <button type="button" class="option-btn" onclick="selectOption('dependents', '3+', this)">
+              <div class="opt-icon">👨‍👩‍👧‍👦</div><div class="opt-label">3 or More</div>
+            </button>
+          </div>
+        </div>
+
+        <div class="fgroup">
+          <label>What is your highest education level?</label>
+          <div class="toggle-group">
+            <button type="button" class="toggle-btn selected" onclick="selectToggle('education', 'Graduate', this)">🎓 Graduate</button>
+            <button type="button" class="toggle-btn" onclick="selectToggle('education', 'Not Graduate', this)">📚 Not Graduate</button>
+          </div>
+        </div>
+
+        <div class="fgroup">
+          <label>What is your employment type?</label>
+          <div class="toggle-group">
+            <button type="button" class="toggle-btn selected" onclick="selectToggle('self_employed', 'No', this)">🏢 Salaried Employee</button>
+            <button type="button" class="toggle-btn" onclick="selectToggle('self_employed', 'Yes', this)">💼 Self-Employed / Business</button>
+          </div>
+        </div>
+
+        <div class="panel-nav">
+          <button type="button" class="btn-next" onclick="goStep(2)">Next: Income Details &rarr;</button>
+        </div>
+      </div>
+
+      <!-- STEP 2: Income -->
+      <div class="form-panel" id="panel-2">
+        <div class="panel-title">Step 2: Your Income Details</div>
+        <div class="panel-sub">Your monthly income helps us determine how much loan you can comfortably repay.</div>
+
+        <div class="fgroup">
+          <label for="applicant_income">Your Monthly Income (₹)</label>
+          <div class="hint">Enter your take-home (in-hand) salary per month. Example: ₹35,000</div>
+          <input type="number" name="applicant_income" id="applicant_income" min="0" placeholder="e.g. 35000" required>
+        </div>
+
+        <div class="fgroup">
+          <label for="coapplicant_income">Co-Applicant's Monthly Income (₹) <span style="font-weight:400; color:#94a3b8;">(optional)</span></label>
+          <div class="hint">Income of your spouse or parent if they are a co-borrower. Enter 0 if not applicable.</div>
+          <input type="number" name="coapplicant_income" id="coapplicant_income" min="0" placeholder="e.g. 15000" value="0">
+        </div>
+
+        <div class="fgroup">
+          <label>Do you have a good credit history?</label>
+          <div class="hint">Have you been repaying past loans or credit cards on time without defaults?</div>
+          <div class="toggle-group">
+            <button type="button" class="toggle-btn selected" onclick="selectToggle('credit_history', '1', this)">✅ Yes, Good Credit</button>
+            <button type="button" class="toggle-btn" onclick="selectToggle('credit_history', '0', this)">❌ No / Unsure</button>
+          </div>
+        </div>
+
+        <div class="panel-nav">
+          <button type="button" class="btn-prev" onclick="goStep(1)">&larr; Back</button>
+          <button type="button" class="btn-next" onclick="goStep(3)">Next: Loan Details &rarr;</button>
+        </div>
+      </div>
+
+      <!-- STEP 3: Loan Details -->
+      <div class="form-panel" id="panel-3">
+        <div class="panel-title">Step 3: Loan Details</div>
+        <div class="panel-sub">Tell us about the loan you need. We'll calculate your eligibility instantly.</div>
+
+        <div class="fgroup">
+          <label>How much loan do you need? (₹)</label>
+          <div class="range-display" id="loanAmtDisplay">₹5,00,000</div>
+          <input type="range" id="loan_amount_range" min="50" max="5000" step="50" value="500" oninput="updateLoanAmt(this.value)">
+          <div class="range-labels"><span>₹50,000</span><span>₹50,00,000</span></div>
+          <input type="hidden" name="loan_amount" id="loan_amount_hidden" value="500">
+        </div>
+
+        <div class="fgroup">
+          <label>Over how many years do you want to repay?</label>
+          <div class="option-grid">
+            <button type="button" class="option-btn" onclick="selectTerm(60, this)">
+              <div class="opt-icon">⚡</div><div class="opt-label">5 Years</div>
+            </button>
+            <button type="button" class="option-btn" onclick="selectTerm(120, this)">
+              <div class="opt-icon">📅</div><div class="opt-label">10 Years</div>
+            </button>
+            <button type="button" class="option-btn" onclick="selectTerm(180, this)">
+              <div class="opt-icon">🏠</div><div class="opt-label">15 Years</div>
+            </button>
+            <button type="button" class="option-btn selected" onclick="selectTerm(360, this)">
+              <div class="opt-icon">🏡</div><div class="opt-label">30 Years</div>
+            </button>
+          </div>
+          <input type="hidden" name="loan_amount_term" id="loan_amount_term" value="360">
+        </div>
+
+        <div class="fgroup">
+          <label>Where is your property located?</label>
+          <div class="option-grid">
+            <button type="button" class="option-btn selected" onclick="selectOption('property_area', 'Urban', this)">
+              <div class="opt-icon">🏙️</div><div class="opt-label">Urban City</div>
+            </button>
+            <button type="button" class="option-btn" onclick="selectOption('property_area', 'Semiurban', this)">
+              <div class="opt-icon">🌆</div><div class="opt-label">Semi-Urban Town</div>
+            </button>
+            <button type="button" class="option-btn" onclick="selectOption('property_area', 'Rural', this)">
+              <div class="opt-icon">🌾</div><div class="opt-label">Rural / Village</div>
+            </button>
+          </div>
+        </div>
+
+        <div class="panel-nav">
+          <button type="button" class="btn-prev" onclick="goStep(2)">&larr; Back</button>
+          <button type="button" class="btn-next" onclick="goStep(4)">Review Application &rarr;</button>
+        </div>
+      </div>
+
+      <!-- STEP 4: Review & Submit -->
+      <div class="form-panel" id="panel-4">
+        <div class="panel-title">Step 4: Review Your Application</div>
+        <div class="panel-sub">Please review your details before submitting. Our AI will evaluate your eligibility instantly.</div>
+
+        <table class="summary-table" id="summaryTable">
+          <tr><td>Gender</td><td id="s_gender">—</td></tr>
+          <tr><td>Marital Status</td><td id="s_married">—</td></tr>
+          <tr><td>Dependents</td><td id="s_dependents">—</td></tr>
+          <tr><td>Education</td><td id="s_education">—</td></tr>
+          <tr><td>Employment Type</td><td id="s_self_employed">—</td></tr>
+          <tr><td>Monthly Income</td><td id="s_income">—</td></tr>
+          <tr><td>Co-Applicant Income</td><td id="s_coapplicant">—</td></tr>
+          <tr><td>Credit History</td><td id="s_credit">—</td></tr>
+          <tr><td>Loan Amount Requested</td><td id="s_loan_amount">—</td></tr>
+          <tr><td>Repayment Term</td><td id="s_term">—</td></tr>
+          <tr><td>Property Location</td><td id="s_property">—</td></tr>
+        </table>
+
+        <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:10px; padding:14px; font-size:0.83rem; color:#92400e; margin-top:8px;">
+          ⚡ <strong>What happens next?</strong> Our AI model will instantly analyze your application and give you a Approved or Declined decision with a detailed risk report.
+        </div>
+
+        <div class="panel-nav" style="margin-top: 0;">
+          <button type="button" class="btn-prev" onclick="goStep(3)">&larr; Edit Details</button>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submitBtn">
+          🚀 Submit & Get My Eligibility Decision
+        </button>
+      </div>
+
+    </div>
+  </form>
+
+  <!-- Loader -->
+  <div class="loader-overlay" id="loaderOverlay">
+    <div class="spinner"></div>
+    <div class="loader-text">Analyzing Your Application...</div>
+    <div class="loader-sub">Our AI is evaluating your credit profile</div>
+  </div>
+
+  <footer style="text-align:center; padding:24px; color:#94a3b8; font-size:0.82rem;">
+    SmartLender &middot; Secure & Encrypted &middot; Your data is private
+  </footer>
+
+  <script>
+    let currentStep = 1;
+
+    function goStep(step) {
+      if (step === 4) buildSummary();
+      document.getElementById('panel-' + currentStep).classList.remove('active');
+      document.getElementById('panel-' + step).classList.add('active');
+      currentStep = step;
+      updateStepper();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function updateStepper() {
+      for (let i = 1; i <= 4; i++) {
+        const bubble = document.getElementById('bubble-' + i);
+        const label = document.getElementById('label-' + i);
+        bubble.classList.remove('active', 'done');
+        label.classList.remove('active', 'done');
+        if (i < currentStep) { bubble.classList.add('done'); label.classList.add('done'); bubble.textContent = '✓'; }
+        else if (i === currentStep) { bubble.classList.add('active'); label.classList.add('active'); bubble.textContent = i; }
+        else { bubble.textContent = i; }
+        if (i < 4) {
+          const line = document.getElementById('line-' + i);
+          if (i < currentStep) line.classList.add('done');
+          else line.classList.remove('done');
+        }
+      }
+    }
+
+    // Toggle buttons (Yes/No style)
+    function selectToggle(field, value, btn) {
+      const parent = btn.parentElement;
+      parent.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      document.getElementById('h_' + field).value = value;
+    }
+
+    // Option grid buttons
+    function selectOption(field, value, btn) {
+      const parent = btn.parentElement;
+      parent.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      document.getElementById('h_' + field).value = value;
+    }
+
+    // Loan term selection
+    function selectTerm(months, btn) {
+      btn.closest('.option-grid').querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      document.getElementById('loan_amount_term').value = months;
+    }
+
+    // Loan amount range
+    function updateLoanAmt(val) {
+      const rupees = parseInt(val) * 1000;
+      document.getElementById('loanAmtDisplay').textContent = '₹' + rupees.toLocaleString('en-IN');
+      document.getElementById('loan_amount_hidden').value = val;
+    }
+
+    // Build summary
+    function buildSummary() {
+      const gender = document.getElementById('h_gender').value;
+      const married = document.getElementById('h_married').value;
+      const dep = document.getElementById('h_dependents').value;
+      const edu = document.getElementById('h_education').value;
+      const selfEmp = document.getElementById('h_self_employed').value;
+      const income = parseInt(document.getElementById('applicant_income').value || 0);
+      const coIncome = parseInt(document.getElementById('coapplicant_income').value || 0);
+      const credit = document.getElementById('h_credit_history').value;
+      const loanAmt = parseInt(document.getElementById('loan_amount_hidden').value) * 1000;
+      const term = parseInt(document.getElementById('loan_amount_term').value);
+      const prop = document.getElementById('h_property_area').value;
+
+      document.getElementById('s_gender').textContent = gender;
+      document.getElementById('s_married').textContent = married === 'Yes' ? 'Married' : 'Single';
+      document.getElementById('s_dependents').textContent = dep === '0' ? 'None' : dep;
+      document.getElementById('s_education').textContent = edu;
+      document.getElementById('s_self_employed').textContent = selfEmp === 'Yes' ? 'Self-Employed / Business' : 'Salaried Employee';
+      document.getElementById('s_income').textContent = '₹' + income.toLocaleString('en-IN') + ' / month';
+      document.getElementById('s_coapplicant').textContent = coIncome > 0 ? '₹' + coIncome.toLocaleString('en-IN') + ' / month' : 'None';
+      document.getElementById('s_credit').textContent = credit === '1' ? '✅ Good Credit History' : '❌ No / Poor Credit History';
+      document.getElementById('s_loan_amount').textContent = '₹' + loanAmt.toLocaleString('en-IN');
+      document.getElementById('s_term').textContent = (term / 12) + ' Years (' + term + ' months)';
+      document.getElementById('s_property').textContent = prop;
+    }
+
+    // Trigger loader on form submit
+    document.getElementById('loanForm').addEventListener('submit', function(e) {
+      if (this.checkValidity()) {
+        document.getElementById('loaderOverlay').classList.add('active');
+      }
+    });
+  </script>
+</body>
+</html>

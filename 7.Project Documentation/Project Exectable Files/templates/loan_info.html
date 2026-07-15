@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loan Guide & Information | SmartLender</title>
+  <meta name="description" content="Learn about different loan types, required CIBIL scores, top banks in India, and how the loan process works.">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    .info-hero {
+      background: linear-gradient(135deg, #0f172a, #1e3a5f);
+      color: #fff; padding: 72px 24px 60px; text-align: center;
+    }
+    .info-hero h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; letter-spacing: -0.8px; margin-bottom: 12px; }
+    .info-hero p { color: #94a3b8; font-size: 1.05rem; max-width: 560px; margin: 0 auto; line-height: 1.7; }
+
+    .info-nav {
+      background: #fff; border-bottom: 1px solid #e2e8f0;
+      position: sticky; top: 64px; z-index: 50;
+    }
+    .info-nav-inner {
+      max-width: 1100px; margin: 0 auto; padding: 0 24px;
+      display: flex; gap: 0; overflow-x: auto;
+    }
+    .info-nav-link {
+      display: block; padding: 16px 20px;
+      font-size: 0.88rem; font-weight: 600;
+      color: #64748b; text-decoration: none;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s; white-space: nowrap;
+    }
+    .info-nav-link:hover, .info-nav-link.active { color: #3b82f6; border-bottom-color: #3b82f6; }
+
+    .info-content { max-width: 1100px; margin: 0 auto; padding: 56px 24px 80px; }
+
+    .info-section { margin-bottom: 72px; scroll-margin-top: 120px; }
+    .info-section-title {
+      font-size: 1.6rem; font-weight: 800; color: #0f172a;
+      letter-spacing: -0.5px; margin-bottom: 8px;
+    }
+    .info-section-sub { color: #64748b; font-size: 0.95rem; line-height: 1.6; margin-bottom: 32px; max-width: 700px; }
+
+    /* Loan Cards */
+    .loan-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+    .loan-card {
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 16px;
+      padding: 28px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: all 0.2s;
+    }
+    .loan-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+    .loan-card-icon { font-size: 2.2rem; margin-bottom: 14px; }
+    .loan-card-title { font-size: 1.05rem; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
+    .loan-card-desc { font-size: 0.88rem; color: #64748b; line-height: 1.6; margin-bottom: 16px; }
+    .loan-card-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+    .meta-badge {
+      font-size: 0.75rem; font-weight: 600; padding: 4px 10px;
+      border-radius: 99px; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe;
+    }
+    .meta-badge.green { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
+    .meta-badge.amber { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+
+    /* CIBIL Section */
+    .cibil-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 28px; }
+    .cibil-card {
+      border-radius: 14px; padding: 22px 18px; text-align: center;
+    }
+    .cibil-range { font-size: 1.4rem; font-weight: 800; margin-bottom: 6px; }
+    .cibil-label { font-size: 0.82rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+    .cibil-desc { font-size: 0.8rem; line-height: 1.5; }
+    .cibil-poor { background: #fff1f2; color: #9f1239; }
+    .cibil-poor .cibil-label { color: #f43f5e; }
+    .cibil-fair { background: #fffbeb; color: #92400e; }
+    .cibil-fair .cibil-label { color: #d97706; }
+    .cibil-good { background: #eff6ff; color: #1e40af; }
+    .cibil-good .cibil-label { color: #3b82f6; }
+    .cibil-excellent { background: #ecfdf5; color: #065f46; }
+    .cibil-excellent .cibil-label { color: #10b981; }
+
+    /* Bank Table */
+    .bank-table-wrap { overflow-x: auto; border-radius: 14px; border: 1px solid #e2e8f0; }
+    .bank-table { width: 100%; border-collapse: collapse; }
+    .bank-table th {
+      background: #f8fafc; padding: 14px 18px; font-size: 0.8rem;
+      font-weight: 700; color: #475569; text-transform: uppercase;
+      letter-spacing: 0.06em; border-bottom: 1px solid #e2e8f0; text-align: left;
+    }
+    .bank-table td {
+      padding: 16px 18px; font-size: 0.9rem; color: #374151;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .bank-table tr:last-child td { border-bottom: none; }
+    .bank-table tr:hover td { background: #f8fafc; }
+    .bank-name { font-weight: 700; color: #0f172a; }
+    .rate-good { color: #059669; font-weight: 600; }
+
+    /* Process Timeline */
+    .timeline { position: relative; padding-left: 32px; }
+    .timeline::before { content: ''; position: absolute; left: 10px; top: 0; bottom: 0; width: 2px; background: #e2e8f0; }
+    .timeline-item { position: relative; margin-bottom: 36px; }
+    .timeline-dot {
+      position: absolute; left: -28px; top: 4px;
+      width: 20px; height: 20px;
+      background: #3b82f6; border: 3px solid #eff6ff;
+      border-radius: 50%;
+    }
+    .timeline-title { font-size: 1.0rem; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
+    .timeline-desc { font-size: 0.88rem; color: #64748b; line-height: 1.6; }
+
+    /* Tips */
+    .tips-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
+    .tip-card {
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 14px;
+      padding: 22px; display: flex; gap: 16px; align-items: flex-start;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    }
+    .tip-icon { font-size: 1.6rem; flex-shrink: 0; }
+    .tip-title { font-size: 0.95rem; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
+    .tip-desc { font-size: 0.84rem; color: #64748b; line-height: 1.6; }
+
+    /* CTA Banner */
+    .info-cta {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      border-radius: 20px; padding: 48px; text-align: center; margin-top: 56px;
+    }
+    .info-cta h2 { font-size: 1.8rem; font-weight: 800; color: #fff; margin-bottom: 12px; }
+    .info-cta p { color: rgba(255,255,255,0.8); margin-bottom: 28px; font-size: 1rem; }
+    .btn-cta-white {
+      background: #fff; color: #1d4ed8; padding: 13px 32px;
+      border-radius: 10px; font-weight: 800; font-size: 0.95rem;
+      text-decoration: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      display: inline-block; transition: all 0.2s;
+    }
+    .btn-cta-white:hover { transform: translateY(-2px); }
+  </style>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="{{ url_for('home') }}" class="brand">Smart<span>Lender</span></a>
+      <div class="nav-links">
+        <a href="{{ url_for('home') }}" class="nav-link">Home</a>
+        <a href="{{ url_for('loan_info') }}" class="nav-link active">Loan Guide</a>
+        {% if logged_in %}
+          <a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
+          <a href="{{ url_for('predict_form') }}" class="nav-btn">Apply Now</a>
+        {% else %}
+          <a href="{{ url_for('login') }}" class="nav-link">Sign In</a>
+          <a href="{{ url_for('signup') }}" class="nav-btn">Get Started</a>
+        {% endif %}
+      </div>
+    </nav>
+  </header>
+
+  <div class="info-hero">
+    <h1>📚 Loan Guide & Information</h1>
+    <p>Everything you need to know about loans, CIBIL scores, bank options, and the application process — explained simply.</p>
+  </div>
+
+  <!-- Sticky Tab Navigation -->
+  <div class="info-nav">
+    <div class="info-nav-inner">
+      <a href="#loan-types" class="info-nav-link active">Loan Types</a>
+      <a href="#cibil" class="info-nav-link">CIBIL Score</a>
+      <a href="#banks" class="info-nav-link">Top Banks</a>
+      <a href="#process" class="info-nav-link">Loan Process</a>
+      <a href="#tips" class="info-nav-link">Tips to Get Approved</a>
+    </div>
+  </div>
+
+  <div class="info-content">
+
+    <!-- ===== LOAN TYPES ===== -->
+    <div class="info-section" id="loan-types">
+      <div class="info-section-title">Types of Loans Available</div>
+      <p class="info-section-sub">India offers a wide range of loan products. Here are the most common ones and what they're meant for.</p>
+      <div class="loan-cards">
+        <div class="loan-card">
+          <div class="loan-card-icon">🏠</div>
+          <div class="loan-card-title">Home Loan</div>
+          <div class="loan-card-desc">Used to purchase a new home, flat, or plot. The property is used as collateral. Best for salaried individuals or self-employed with stable income.</div>
+          <div class="loan-card-meta">
+            <span class="meta-badge green">Up to 90% of value</span>
+            <span class="meta-badge">15–30 years tenure</span>
+            <span class="meta-badge amber">CIBIL ≥ 700</span>
+          </div>
+        </div>
+        <div class="loan-card">
+          <div class="loan-card-icon">💳</div>
+          <div class="loan-card-title">Personal Loan</div>
+          <div class="loan-card-desc">Unsecured loan for any personal need — medical bills, travel, wedding, home renovation. No collateral required but interest rates are higher.</div>
+          <div class="loan-card-meta">
+            <span class="meta-badge green">Up to ₹40 Lakhs</span>
+            <span class="meta-badge">1–5 years tenure</span>
+            <span class="meta-badge amber">CIBIL ≥ 750</span>
+          </div>
+        </div>
+        <div class="loan-card">
+          <div class="loan-card-icon">🚗</div>
+          <div class="loan-card-title">Vehicle / Car Loan</div>
+          <div class="loan-card-desc">Finance a new or used car or two-wheeler. The vehicle serves as collateral. Quick approvals and low interest rates for new vehicles.</div>
+          <div class="loan-card-meta">
+            <span class="meta-badge green">Up to 100% of ex-showroom price</span>
+            <span class="meta-badge">3–7 years tenure</span>
+            <span class="meta-badge amber">CIBIL ≥ 700</span>
+          </div>
+        </div>
+        <div class="loan-card">
+          <div class="loan-card-icon">🎓</div>
+          <div class="loan-card-title">Education Loan</div>
+          <div class="loan-card-desc">Covers tuition fees, hostel, books, and other education expenses. Repayment starts after course completion + 6–12 months.</div>
+          <div class="loan-card-meta">
+            <span class="meta-badge green">Up to ₹1.5 Crore abroad</span>
+            <span class="meta-badge">Up to 15 years</span>
+            <span class="meta-badge amber">Parent co-sign required</span>
+          </div>
+        </div>
+        <div class="loan-card">
+          <div class="loan-card-icon">💼</div>
+          <div class="loan-card-title">Business Loan</div>
+          <div class="loan-card-desc">For entrepreneurs and small businesses to fund operations, purchase equipment, or expand. GST registration often required.</div>
+          <div class="loan-card-meta">
+            <span class="meta-badge green">Up to ₹2 Crore</span>
+            <span class="meta-badge">1–5 years tenure</span>
+            <span class="meta-badge amber">CIBIL ≥ 700</span>
+          </div>
+        </div>
+        <div class="loan-card">
+          <div class="loan-card-icon">🌾</div>
+          <div class="loan-card-title">Agriculture Loan</div>
+          <div class="loan-card-desc">Designed for farmers to purchase seeds, fertilisers, equipment, or develop land. Subsidised interest rates under government schemes.</div>
+          <div class="loan-card-meta">
+            <span class="meta-badge green">Low interest rates</span>
+            <span class="meta-badge">Seasonal repayment</span>
+            <span class="meta-badge amber">Land ownership required</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CIBIL SCORE ===== -->
+    <div class="info-section" id="cibil">
+      <div class="info-section-title">Understanding Your CIBIL Score</div>
+      <p class="info-section-sub">Your CIBIL score (Credit Score) is a 3-digit number between 300–900 that banks use to assess your creditworthiness. A higher score means better loan chances and lower interest rates.</p>
+      <div class="cibil-grid">
+        <div class="cibil-card cibil-poor">
+          <div class="cibil-range">300–549</div>
+          <div class="cibil-label">Poor</div>
+          <div class="cibil-desc">Loan approval is very unlikely. Focus on clearing outstanding dues first.</div>
+        </div>
+        <div class="cibil-card cibil-fair">
+          <div class="cibil-range">550–649</div>
+          <div class="cibil-label">Fair</div>
+          <div class="cibil-desc">Some lenders may approve but at higher interest rates and stricter terms.</div>
+        </div>
+        <div class="cibil-card cibil-good">
+          <div class="cibil-range">650–749</div>
+          <div class="cibil-label">Good</div>
+          <div class="cibil-desc">Most banks will approve your loan. Negotiate for better rates.</div>
+        </div>
+        <div class="cibil-card cibil-excellent">
+          <div class="cibil-range">750–900</div>
+          <div class="cibil-label">Excellent</div>
+          <div class="cibil-desc">Best interest rates, fastest approvals, and highest loan amounts available.</div>
+        </div>
+      </div>
+      <div class="card" style="background:#eff6ff; border-color:#bfdbfe; margin-top: 16px;">
+        <p style="font-size:0.9rem; color:#1e40af; line-height:1.7;">
+          <strong>💡 How to Improve Your CIBIL Score:</strong><br>
+          Pay all EMIs and credit card bills on time · Keep credit utilisation below 30% · Don't apply for multiple loans simultaneously · Maintain a mix of secured and unsecured credit · Check your credit report for errors regularly.
+        </p>
+      </div>
+    </div>
+
+    <!-- ===== BANKS ===== -->
+    <div class="info-section" id="banks">
+      <div class="info-section-title">Top Banks & Their Home Loan Rates</div>
+      <p class="info-section-sub">Compare interest rates offered by major banks for home loans. Rates vary based on credit score, loan amount, and employment type.</p>
+      <div class="bank-table-wrap">
+        <table class="bank-table">
+          <thead>
+            <tr>
+              <th>Bank Name</th>
+              <th>Interest Rate (p.a.)</th>
+              <th>Max Loan Amount</th>
+              <th>Processing Fee</th>
+              <th>Min CIBIL Score</th>
+              <th>Best For</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="bank-name">🏦 State Bank of India (SBI)</span></td>
+              <td><span class="rate-good">8.50% – 10.05%</span></td>
+              <td>₹30 Crore</td>
+              <td>0.35%</td>
+              <td>700+</td>
+              <td>Salaried, Government employees</td>
+            </tr>
+            <tr>
+              <td><span class="bank-name">🏦 HDFC Bank</span></td>
+              <td><span class="rate-good">8.75% – 10.50%</span></td>
+              <td>No upper limit</td>
+              <td>0.50%</td>
+              <td>720+</td>
+              <td>High-income professionals</td>
+            </tr>
+            <tr>
+              <td><span class="bank-name">🏦 ICICI Bank</span></td>
+              <td>8.75% – 10.30%</td>
+              <td>₹5 Crore</td>
+              <td>0.50%</td>
+              <td>700+</td>
+              <td>Salaried & self-employed</td>
+            </tr>
+            <tr>
+              <td><span class="bank-name">🏦 Axis Bank</span></td>
+              <td>8.75% – 13.30%</td>
+              <td>₹5 Crore</td>
+              <td>1%</td>
+              <td>700+</td>
+              <td>Fast digital approvals</td>
+            </tr>
+            <tr>
+              <td><span class="bank-name">🏦 Bank of Baroda</span></td>
+              <td><span class="rate-good">8.40% – 10.60%</span></td>
+              <td>₹15 Crore</td>
+              <td>0.25%</td>
+              <td>675+</td>
+              <td>Rural & semi-urban areas</td>
+            </tr>
+            <tr>
+              <td><span class="bank-name">🏦 LIC Housing Finance</span></td>
+              <td><span class="rate-good">8.50% – 10.75%</span></td>
+              <td>₹15 Crore</td>
+              <td>Nil–0.25%</td>
+              <td>700+</td>
+              <td>Long-term borrowers</td>
+            </tr>
+            <tr>
+              <td><span class="bank-name">🏦 Kotak Mahindra Bank</span></td>
+              <td>8.75% – 9.50%</td>
+              <td>₹10 Crore</td>
+              <td>0.5%</td>
+              <td>750+</td>
+              <td>Premium urban customers</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:0.78rem; color:#94a3b8; margin-top: 12px;">* Rates are indicative and subject to change. Verify with the bank before applying.</p>
+    </div>
+
+    <!-- ===== LOAN PROCESS ===== -->
+    <div class="info-section" id="process">
+      <div class="info-section-title">How the Loan Process Works</div>
+      <p class="info-section-sub">From first application to loan disbursement — here's what to expect step by step.</p>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-title">Step 1: Check Eligibility Online</div>
+          <div class="timeline-desc">Use SmartLender or a bank's website to check if you are eligible based on income, loan amount, and credit history. This does not affect your CIBIL score.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-title">Step 2: Gather Required Documents</div>
+          <div class="timeline-desc">Prepare identity proof (Aadhaar/PAN), address proof, income documents (salary slips / ITR), bank statements (last 6 months), and property documents.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-title">Step 3: Submit Formal Application</div>
+          <div class="timeline-desc">Apply at your chosen bank — online or at a branch. Fill out the loan application form and submit all required documents.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-title">Step 4: Document Verification & Credit Check</div>
+          <div class="timeline-desc">The bank verifies all submitted documents and pulls your CIBIL report. This step usually takes 3–7 working days.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-title">Step 5: Property Valuation (for Home Loans)</div>
+          <div class="timeline-desc">The bank sends a technical team to evaluate and validate the property you wish to buy or mortgage. Legal clearance is also obtained.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-title">Step 6: Loan Sanction Letter</div>
+          <div class="timeline-desc">If approved, you receive a formal sanction letter stating the loan amount, interest rate, tenure, and EMI amount. Review carefully before signing.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="background:#10b981;"></div>
+          <div class="timeline-title">Step 7: Disbursement 🎉</div>
+          <div class="timeline-desc">After signing all agreements, the loan amount is disbursed directly to the seller's account (for home loans) or your bank account (for personal/vehicle loans).</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TIPS ===== -->
+    <div class="info-section" id="tips">
+      <div class="info-section-title">Tips to Improve Loan Approval Chances</div>
+      <p class="info-section-sub">Follow these practical tips to significantly increase your chances of getting approved with better rates.</p>
+      <div class="tips-grid">
+        <div class="tip-card">
+          <div class="tip-icon">📈</div>
+          <div>
+            <div class="tip-title">Maintain a CIBIL Score of 750+</div>
+            <div class="tip-desc">Always pay your EMIs and credit cards on time. A score above 750 unlocks the best rates and highest approval chances.</div>
+          </div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-icon">💰</div>
+          <div>
+            <div class="tip-title">Keep Your Debt-to-Income Ratio Low</div>
+            <div class="tip-desc">Banks prefer your total monthly EMIs to be under 40% of your income. Pay off existing loans before applying for new ones.</div>
+          </div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-icon">👥</div>
+          <div>
+            <div class="tip-title">Add a Co-Applicant</div>
+            <div class="tip-desc">Adding a working spouse or parent as a co-applicant improves combined income, boosting your eligible loan amount significantly.</div>
+          </div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-icon">📄</div>
+          <div>
+            <div class="tip-title">Keep Documents Ready</div>
+            <div class="tip-desc">Have all documents organized — Aadhaar, PAN, salary slips, ITR, and bank statements. Incomplete applications cause delays or rejection.</div>
+          </div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-icon">🏦</div>
+          <div>
+            <div class="tip-title">Apply with Your Existing Bank First</div>
+            <div class="tip-desc">Banks are more likely to approve loans for existing account holders due to existing transaction history and trust.</div>
+          </div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-icon">🎯</div>
+          <div>
+            <div class="tip-title">Request Only What You Need</div>
+            <div class="tip-desc">Asking for a lower loan-to-income ratio improves approval chances. A larger down payment also reduces the risk for banks.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CTA ===== -->
+    <div class="info-cta">
+      <h2>Ready to Check Your Eligibility?</h2>
+      <p>Use SmartLender to get an instant AI-powered loan decision — for free.</p>
+      {% if logged_in %}
+        <a href="{{ url_for('predict_form') }}" class="btn-cta-white">Apply for a Loan Now &rarr;</a>
+      {% else %}
+        <a href="{{ url_for('signup') }}" class="btn-cta-white">Create Free Account &rarr;</a>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <footer style="background:#0f172a; color:#475569; text-align:center; padding:32px 24px; font-size:0.85rem;">
+    &copy; 2025 SmartLender &middot; <a href="{{ url_for('home') }}" style="color:#94a3b8; text-decoration:none;">Home</a> &middot;
+    <a href="{{ url_for('login') }}" style="color:#94a3b8; text-decoration:none;">Sign In</a>
+  </footer>
+
+  <script>
+    // Smooth scroll for sticky nav
+    document.querySelectorAll('.info-nav-link').forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        const target = document.querySelector(link.getAttribute('href'));
+        if(target) target.scrollIntoView({ behavior: 'smooth' });
+        document.querySelectorAll('.info-nav-link').forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

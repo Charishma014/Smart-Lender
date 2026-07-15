@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartLender – Instant Loan Decisions</title>
+  <meta name="description" content="SmartLender helps you check your home loan eligibility instantly. Fast, secure, and transparent credit decisions powered by AI.">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    /* ===== HERO ===== */
+    .hero {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0f4c81 100%);
+      color: #fff;
+      padding: 100px 24px 80px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -80px; right: -80px;
+      width: 420px; height: 420px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(59,130,246,0.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-eyebrow {
+      display: inline-block;
+      background: rgba(59,130,246,0.18);
+      border: 1px solid rgba(59,130,246,0.35);
+      color: #93c5fd;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 6px 16px;
+      border-radius: 99px;
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-size: clamp(2.2rem, 5vw, 3.4rem);
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      line-height: 1.15;
+      max-width: 780px;
+      margin: 0 auto 20px;
+    }
+    .hero h1 .highlight {
+      color: #60a5fa;
+    }
+    .hero-sub {
+      font-size: 1.1rem;
+      color: #94a3b8;
+      max-width: 580px;
+      margin: 0 auto 40px;
+      line-height: 1.7;
+    }
+    .hero-cta-group {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: #fff;
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1rem;
+      text-decoration: none;
+      box-shadow: 0 4px 20px rgba(59,130,246,0.45);
+      transition: all 0.25s ease;
+      display: inline-block;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(59,130,246,0.55);
+    }
+    .btn-secondary {
+      background: rgba(255,255,255,0.08);
+      color: #e2e8f0;
+      padding: 14px 28px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1rem;
+      text-decoration: none;
+      border: 1px solid rgba(255,255,255,0.18);
+      transition: all 0.25s ease;
+      display: inline-block;
+      backdrop-filter: blur(6px);
+    }
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.14);
+      transform: translateY(-2px);
+    }
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      margin-top: 64px;
+      flex-wrap: wrap;
+    }
+    .hero-stat { text-align: center; }
+    .hero-stat-value {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #60a5fa;
+      line-height: 1;
+    }
+    .hero-stat-label {
+      font-size: 0.82rem;
+      color: #64748b;
+      margin-top: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+
+    /* ===== HOW IT WORKS ===== */
+    .section { padding: 88px 24px; max-width: 1200px; margin: 0 auto; }
+    .section-eyebrow {
+      font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.12em; color: var(--accent); margin-bottom: 12px;
+    }
+    .section-title {
+      font-size: clamp(1.7rem, 3.5vw, 2.4rem);
+      font-weight: 800; color: var(--primary);
+      letter-spacing: -0.8px; margin-bottom: 12px;
+    }
+    .section-sub { font-size: 1rem; color: var(--text-muted); max-width: 560px; line-height: 1.7; }
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 24px; margin-top: 52px;
+    }
+    .step-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 28px;
+      position: relative;
+      transition: all 0.25s ease;
+      box-shadow: var(--shadow);
+    }
+    .step-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+    .step-num {
+      display: flex; align-items: center; justify-content: center;
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: #fff; font-size: 1.1rem; font-weight: 800;
+      border-radius: 12px; margin-bottom: 20px;
+    }
+    .step-card h3 { font-size: 1.1rem; font-weight: 700; color: var(--primary); margin-bottom: 10px; }
+    .step-card p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.65; }
+
+    /* ===== FEATURES ===== */
+    .features-bg { background: #f8fafc; }
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 28px; margin-top: 52px;
+    }
+    .feature-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 32px;
+      box-shadow: var(--shadow); transition: all 0.25s ease;
+    }
+    .feature-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+    .feature-icon {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, #eff6ff, #dbeafe);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem; margin-bottom: 20px;
+    }
+    .feature-card h3 { font-size: 1.1rem; font-weight: 700; color: var(--primary); margin-bottom: 10px; }
+    .feature-card p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.65; }
+
+    /* ===== LOAN TYPES BANNER ===== */
+    .loan-types-section {
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      padding: 80px 24px;
+    }
+    .loan-types-inner { max-width: 1200px; margin: 0 auto; }
+    .loan-types-title {
+      font-size: clamp(1.5rem, 3vw, 2.1rem);
+      font-weight: 800; color: #fff;
+      letter-spacing: -0.5px; margin-bottom: 40px; text-align: center;
+    }
+    .loan-pills {
+      display: flex; flex-wrap: wrap; gap: 14px; justify-content: center;
+    }
+    .loan-pill {
+      background: rgba(59,130,246,0.12);
+      border: 1px solid rgba(59,130,246,0.3);
+      color: #93c5fd;
+      padding: 10px 22px; border-radius: 99px;
+      font-size: 0.9rem; font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    .loan-pill:hover {
+      background: rgba(59,130,246,0.25);
+      transform: translateY(-1px);
+    }
+
+    /* ===== TESTIMONIAL STRIP ===== */
+    .trust-strip {
+      background: var(--card); border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 40px 24px;
+    }
+    .trust-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: flex; gap: 32px; flex-wrap: wrap;
+      align-items: center; justify-content: center;
+    }
+    .trust-item {
+      display: flex; align-items: center; gap: 12px;
+      font-size: 0.88rem; color: var(--text-muted); font-weight: 500;
+    }
+    .trust-item-icon {
+      width: 36px; height: 36px;
+      background: var(--accent-light); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+    }
+
+    /* ===== CTA SECTION ===== */
+    .cta-section {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      padding: 80px 24px;
+      text-align: center;
+    }
+    .cta-section h2 {
+      font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+      font-weight: 800; color: #fff;
+      letter-spacing: -0.8px; margin-bottom: 16px;
+    }
+    .cta-section p {
+      font-size: 1.05rem; color: rgba(255,255,255,0.8);
+      max-width: 500px; margin: 0 auto 36px;
+    }
+    .btn-white {
+      background: #fff; color: #1d4ed8;
+      padding: 14px 36px; border-radius: 8px;
+      font-weight: 800; font-size: 1rem;
+      text-decoration: none;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+      transition: all 0.25s ease;
+      display: inline-block;
+    }
+    .btn-white:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.22); }
+
+    /* ===== FOOTER ===== */
+    .site-footer {
+      background: #0f172a; color: #64748b;
+      padding: 40px 24px; text-align: center; font-size: 0.85rem;
+    }
+    .site-footer a { color: #94a3b8; text-decoration: none; }
+    .site-footer a:hover { color: #fff; }
+  </style>
+</head>
+<body>
+  <!-- ===== NAVIGATION ===== -->
+  <header>
+    <nav>
+      <a href="{{ url_for('home') }}" class="brand">Smart<span>Lender</span></a>
+      <div class="nav-links">
+        <a href="{{ url_for('home') }}" class="nav-link active">Home</a>
+        <a href="{{ url_for('loan_info') }}" class="nav-link">Loan Guide</a>
+        {% if session_user %}
+          <a href="{{ url_for('dashboard') }}" class="nav-link">My Dashboard</a>
+          <a href="{{ url_for('predict_form') }}" class="nav-btn">Apply Now</a>
+        {% else %}
+          <a href="{{ url_for('login') }}" class="nav-link">Sign In</a>
+          <a href="{{ url_for('signup') }}" class="nav-btn">Get Started</a>
+        {% endif %}
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ===== HERO ===== -->
+    <section class="hero">
+      <div class="hero-eyebrow">🏦 Trusted Loan Eligibility Platform</div>
+      <h1>Get Your Loan Approved <span class="highlight">Faster</span> Than Ever</h1>
+      <p class="hero-sub">
+        SmartLender uses intelligent credit analysis to help you check loan eligibility in seconds — no bank visits, no paperwork delays.
+      </p>
+      <div class="hero-cta-group">
+        {% if session_user %}
+          <a href="{{ url_for('predict_form') }}" class="btn-primary">Apply for a Loan &rarr;</a>
+          <a href="{{ url_for('dashboard') }}" class="btn-secondary">My Dashboard</a>
+        {% else %}
+          <a href="{{ url_for('signup') }}" class="btn-primary">Start Free Application &rarr;</a>
+          <a href="{{ url_for('loan_info') }}" class="btn-secondary">Learn About Loans</a>
+        {% endif %}
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="hero-stat-value">10s</div>
+          <div class="hero-stat-label">Instant Decision</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value">100%</div>
+          <div class="hero-stat-label">Secure & Private</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value">0 ₹</div>
+          <div class="hero-stat-label">No Hidden Fees</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value">24/7</div>
+          <div class="hero-stat-label">Always Available</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TRUST STRIP ===== -->
+    <div class="trust-strip">
+      <div class="trust-inner">
+        <div class="trust-item"><span class="trust-item-icon">🔒</span>Bank-grade Security</div>
+        <div class="trust-item"><span class="trust-item-icon">⚡</span>Instant Eligibility Check</div>
+        <div class="trust-item"><span class="trust-item-icon">📊</span>AI-Powered Risk Analysis</div>
+        <div class="trust-item"><span class="trust-item-icon">🏦</span>Multiple Bank Options</div>
+        <div class="trust-item"><span class="trust-item-icon">✅</span>No Credit Score Required to Check</div>
+      </div>
+    </div>
+
+    <!-- ===== HOW IT WORKS ===== -->
+    <section class="section">
+      <div class="section-eyebrow">How It Works</div>
+      <h2 class="section-title">3 Simple Steps to Know Your Eligibility</h2>
+      <p class="section-sub">No complex paperwork. No bank visits. Just fill a quick form and get your answer instantly.</p>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <h3>Create Your Profile</h3>
+          <p>Sign up with a username and password. Your data is stored securely and linked to your profile only.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <h3>Fill the Application</h3>
+          <p>Answer a few simple questions about your income, loan amount, and personal details. Takes under 2 minutes.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <h3>Get Your Decision</h3>
+          <p>Our AI model instantly tells you if you are likely to be approved or not, along with key risk insights.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">4</div>
+          <h3>Track Your Applications</h3>
+          <p>Your personal dashboard keeps a full history of every application you've submitted for easy reference.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== LOAN TYPES ===== -->
+    <div class="loan-types-section">
+      <div class="loan-types-inner">
+        <h2 class="loan-types-title">Explore Loan Categories We Evaluate</h2>
+        <div class="loan-pills">
+          <a href="{{ url_for('loan_info') }}" class="loan-pill">🏠 Home Loan</a>
+          <a href="{{ url_for('loan_info') }}" class="loan-pill">🚗 Vehicle Loan</a>
+          <a href="{{ url_for('loan_info') }}" class="loan-pill">🎓 Education Loan</a>
+          <a href="{{ url_for('loan_info') }}" class="loan-pill">💼 Business Loan</a>
+          <a href="{{ url_for('loan_info') }}" class="loan-pill">💳 Personal Loan</a>
+          <a href="{{ url_for('loan_info') }}" class="loan-pill">🏗️ Construction Loan</a>
+          <a href="{{ url_for('loan_info') }}" class="loan-pill">🌾 Agriculture Loan</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== FEATURES ===== -->
+    <div class="features-bg">
+      <section class="section">
+        <div class="section-eyebrow">Why SmartLender</div>
+        <h2 class="section-title">Everything You Need, Nothing You Don't</h2>
+        <p class="section-sub">We've built the simplest, most transparent loan eligibility platform for everyday people.</p>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <h3>Instant Decisions</h3>
+            <p>Our intelligent model gives you an eligibility decision in under 10 seconds. No waiting, no callbacks.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📋</div>
+            <h3>Detailed Risk Report</h3>
+            <p>Understand exactly why you were approved or denied with a clear, easy-to-read risk breakdown report.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🔒</div>
+            <h3>100% Secure</h3>
+            <p>Your data is encrypted and stored safely. We never share your personal information with third parties.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📚</div>
+            <h3>Loan Education Hub</h3>
+            <p>Not sure what CIBIL score means? We have a complete guide to help you understand loans and banks.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <h3>Application Tracking</h3>
+            <p>Keep track of all your past applications from one personal dashboard with full history.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🤖</div>
+            <h3>AI-Powered Analysis</h3>
+            <p>Our machine learning model is trained on thousands of real loan decisions for accurate predictions.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ===== CALL TO ACTION ===== -->
+    <section class="cta-section">
+      <h2>Ready to Check Your Loan Eligibility?</h2>
+      <p>It's free, takes 2 minutes, and won't affect your credit score.</p>
+      {% if session_user %}
+        <a href="{{ url_for('predict_form') }}" class="btn-white">Apply for a Loan Now &rarr;</a>
+      {% else %}
+        <a href="{{ url_for('signup') }}" class="btn-white">Create Free Account &rarr;</a>
+      {% endif %}
+    </section>
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="site-footer">
+    <p>
+      &copy; 2025 SmartLender &middot;
+      <a href="{{ url_for('loan_info') }}">Loan Guide</a> &middot;
+      <a href="{{ url_for('login') }}">Sign In</a> &middot;
+      <a href="{{ url_for('signup') }}">Sign Up</a>
+    </p>
+    <p style="margin-top: 8px; font-size: 0.78rem; color: #475569;">
+      This platform is for eligibility estimation only. Final loan decisions are subject to bank verification.
+    </p>
+  </footer>
+</body>
+</html>

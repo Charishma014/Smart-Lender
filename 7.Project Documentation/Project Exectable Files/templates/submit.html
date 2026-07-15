@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loan Decision Result | SmartLender</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    body { background: #f1f5f9; }
+
+    /* ===== RESULT BANNER ===== */
+    .result-hero {
+      padding: 56px 24px 48px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .result-hero.approved {
+      background: linear-gradient(135deg, #064e3b, #059669, #10b981);
+    }
+    .result-hero.denied {
+      background: linear-gradient(135deg, #7f1d1d, #dc2626, #f43f5e);
+    }
+    .result-hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at 70% 50%, rgba(255,255,255,0.08) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .result-icon { font-size: 4rem; margin-bottom: 16px; animation: popIn 0.5s ease; }
+    @keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .result-hero h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; color: #fff; letter-spacing: -0.8px; margin-bottom: 10px; }
+    .result-hero p { font-size: 1.05rem; color: rgba(255,255,255,0.82); max-width: 500px; margin: 0 auto 20px; line-height: 1.6; }
+    .confidence-chip {
+      display: inline-block;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.3);
+      backdrop-filter: blur(6px);
+      color: #fff; font-size: 0.9rem; font-weight: 600;
+      padding: 8px 20px; border-radius: 99px;
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    .result-body { max-width: 960px; margin: 0 auto; padding: 36px 20px 72px; }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 720px) { .result-grid { grid-template-columns: 1fr; } }
+
+    .res-card {
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 18px;
+      padding: 28px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .res-card-title {
+      font-size: 0.8rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: #64748b; margin-bottom: 18px;
+      padding-bottom: 12px; border-bottom: 1px solid #f1f5f9;
+    }
+
+    /* Profile rows */
+    .profile-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 0; border-bottom: 1px solid #f8fafc; font-size: 0.88rem;
+    }
+    .profile-row:last-child { border-bottom: none; }
+    .profile-label { color: #64748b; font-weight: 500; }
+    .profile-value { color: #0f172a; font-weight: 700; text-align: right; }
+
+    /* Risk items */
+    .risk-item {
+      border-radius: 12px; padding: 14px 16px; margin-bottom: 12px;
+      display: flex; gap: 12px; align-items: flex-start;
+    }
+    .risk-item:last-child { margin-bottom: 0; }
+    .risk-item.high { background: #fff1f2; border-left: 4px solid #f43f5e; }
+    .risk-item.medium { background: #fffbeb; border-left: 4px solid #d97706; }
+    .risk-item.low { background: #ecfdf5; border-left: 4px solid #10b981; }
+    .risk-badge {
+      width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 0.9rem;
+    }
+    .risk-item.high .risk-badge { background: #fecdd3; }
+    .risk-item.medium .risk-badge { background: #fde68a; }
+    .risk-item.low .risk-badge { background: #a7f3d0; }
+    .risk-content {}
+    .risk-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 3px; }
+    .risk-item.high .risk-title { color: #9f1239; }
+    .risk-item.medium .risk-title { color: #92400e; }
+    .risk-item.low .risk-title { color: #065f46; }
+    .risk-desc { font-size: 0.8rem; color: #64748b; line-height: 1.5; }
+
+    /* Action buttons */
+    .action-bar {
+      display: flex; gap: 14px; flex-wrap: wrap; margin-top: 28px;
+    }
+    .btn-dashboard {
+      flex: 1; min-width: 180px; padding: 14px 24px; text-align: center;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: #fff; border-radius: 12px; text-decoration: none;
+      font-weight: 700; font-size: 0.95rem;
+      box-shadow: 0 4px 14px rgba(59,130,246,0.3); transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-dashboard:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(59,130,246,0.4); }
+    .btn-new-app {
+      flex: 1; min-width: 180px; padding: 14px 24px; text-align: center;
+      background: #fff; border: 1.5px solid #e2e8f0; color: #374151;
+      border-radius: 12px; text-decoration: none; font-weight: 700;
+      font-size: 0.95rem; transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-new-app:hover { border-color: #3b82f6; color: #2563eb; background: #eff6ff; }
+
+    /* Tips box */
+    .tips-box {
+      background: linear-gradient(135deg, #eff6ff, #dbeafe);
+      border: 1px solid #bfdbfe; border-radius: 16px; padding: 24px 28px; margin-top: 20px;
+    }
+    .tips-box h3 { font-size: 1rem; font-weight: 800; color: #1e40af; margin-bottom: 12px; }
+    .tips-box ul { list-style: none; padding: 0; }
+    .tips-box li { font-size: 0.87rem; color: #1e40af; padding: 6px 0; display: flex; gap: 8px; }
+    .tips-box li::before { content: '→'; color: #3b82f6; font-weight: 700; flex-shrink: 0; }
+
+    /* Disclaimer */
+    .disclaimer {
+      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;
+      padding: 16px 20px; margin-top: 20px; font-size: 0.78rem; color: #94a3b8; line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="{{ url_for('home') }}" class="brand">Smart<span>Lender</span></a>
+      <div class="nav-links">
+        <a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
+        <a href="{{ url_for('loan_info') }}" class="nav-link">Loan Guide</a>
+        <a href="{{ url_for('predict_form') }}" class="nav-btn">New Application</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ===== RESULT HERO ===== -->
+  <div class="result-hero {{ 'approved' if approved else 'denied' }}">
+    {% if approved %}
+      <div class="result-icon">🎉</div>
+      <h1>Congratulations! You're Eligible</h1>
+      <p>Your profile meets the loan approval criteria. You have a strong chance of getting approved by partner banks.</p>
+    {% else %}
+      <div class="result-icon">😔</div>
+      <h1>Application Not Approved</h1>
+      <p>Based on the information provided, your profile doesn't meet current eligibility criteria. But don't worry — we have tips to help you qualify next time!</p>
+    {% endif %}
+    {% if confidence %}
+      <div class="confidence-chip">AI Confidence: <strong>{{ confidence }}%</strong> &nbsp;·&nbsp; Model: {{ model_name }}</div>
+    {% endif %}
+  </div>
+
+  <div class="result-body">
+
+    <div class="result-grid">
+
+      <!-- LEFT: Applicant Profile -->
+      <div class="res-card">
+        <div class="res-card-title">📋 Your Application Summary</div>
+
+        <div class="profile-row">
+          <span class="profile-label">Monthly Income</span>
+          <span class="profile-value">₹{{ "{:,.0f}".format(applicant.ApplicantIncome) }}</span>
+        </div>
+        <div class="profile-row">
+          <span class="profile-label">Co-Applicant Income</span>
+          <span class="profile-value">₹{{ "{:,.0f}".format(applicant.CoapplicantIncome) }}</span>
+        </div>
+        <div class="profile-row">
+          <span class="profile-label">Loan Amount Requested</span>
+          <span class="profile-value">₹{{ "{:,.0f}".format(applicant.LoanAmount * 1000) }}</span>
+        </div>
+        <div class="profile-row">
+          <span class="profile-label">Repayment Term</span>
+          <span class="profile-value">{{ applicant.Loan_Amount_Term | int }} months ({{ "{:.0f}".format(applicant.Loan_Amount_Term / 12) }} yrs)</span>
+        </div>
+        <div class="profile-row">
+          <span class="profile-label">Credit History</span>
+          <span class="profile-value">{{ '✅ Good' if applicant.Credit_History == 1.0 else '❌ Poor / None' }}</span>
+        </div>
+        <div class="profile-row">
+          <span class="profile-label">Property Location</span>
+          <span class="profile-value">{{ applicant.Property_Area }}</span>
+        </div>
+        <div class="profile-row">
+          <span class="profile-label">Education</span>
+          <span class="profile-value">{{ applicant.Education }}</span>
+        </div>
+        <div class="profile-row">
+          <span class="profile-label">Employment</span>
+          <span class="profile-value">{{ 'Self-Employed' if applicant.Self_Employed == 'Yes' else 'Salaried' }}</span>
+        </div>
+        <div class="profile-row">
+          <span class="profile-label">Marital Status</span>
+          <span class="profile-value">{{ 'Married' if applicant.Married == 'Yes' else 'Single' }}</span>
+        </div>
+        <div class="profile-row">
+          <span class="profile-label">Dependents</span>
+          <span class="profile-value">{{ applicant.Dependents if applicant.Dependents != '0' else 'None' }}</span>
+        </div>
+      </div>
+
+      <!-- RIGHT: Risk Assessment -->
+      <div class="res-card">
+        <div class="res-card-title">⚠️ Risk & Policy Assessment</div>
+
+        {% for risk in risk_factors %}
+          <div class="risk-item {{ risk.severity }}">
+            <div class="risk-badge">
+              {% if risk.severity == 'high' %}⚠️
+              {% elif risk.severity == 'medium' %}ℹ️
+              {% else %}✅{% endif %}
+            </div>
+            <div class="risk-content">
+              <div class="risk-title">{{ risk.factor }}</div>
+              <div class="risk-desc">{{ risk.desc }}</div>
+            </div>
+          </div>
+        {% else %}
+          <div class="risk-item low">
+            <div class="risk-badge">✅</div>
+            <div class="risk-content">
+              <div class="risk-title">Clean Application Profile</div>
+              <div class="risk-desc">No significant risk flags detected in your application.</div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Tips based on result -->
+    {% if not approved %}
+      <div class="tips-box">
+        <h3>💡 How to Improve Your Chances Next Time</h3>
+        <ul>
+          <li>Clear any existing loan defaults or overdue credit card payments to build a positive credit history.</li>
+          <li>Try to reduce the requested loan amount or increase your repayment tenure to lower your monthly EMI burden.</li>
+          <li>Add a working co-applicant (spouse or parent) to increase your total household income.</li>
+          <li>Aim for a CIBIL credit score of 750+ before reapplying. Check our <a href="{{ url_for('loan_info') }}#cibil" style="color:#2563eb; font-weight:700;">CIBIL Guide</a> for tips.</li>
+          <li>Reduce other ongoing EMIs and liabilities before applying again.</li>
+        </ul>
+      </div>
+    {% else %}
+      <div class="tips-box" style="background:linear-gradient(135deg, #ecfdf5, #d1fae5); border-color:#a7f3d0;">
+        <h3 style="color:#065f46;">🏦 What Are Your Next Steps?</h3>
+        <ul style="">
+          <li style="color:#065f46;">Gather your documents: Aadhaar, PAN, salary slips (3 months), bank statements (6 months).</li>
+          <li style="color:#065f46;">Visit or apply online at SBI, HDFC, ICICI, or other banks — compare their rates first.</li>
+          <li style="color:#065f46;">Check our <a href="{{ url_for('loan_info') }}#banks" style="color:#065f46; font-weight:700; text-decoration:underline;">Bank Comparison Guide</a> to find the best deal for you.</li>
+          <li style="color:#065f46;">Negotiate for a lower interest rate — a good CIBIL score gives you bargaining power!</li>
+        </ul>
+      </div>
+    {% endif %}
+
+    <!-- Action buttons -->
+    <div class="action-bar">
+      <a href="{{ url_for('dashboard') }}" class="btn-dashboard">📊 Go to My Dashboard</a>
+      <a href="{{ url_for('predict_form') }}" class="btn-new-app">📝 Try Another Application</a>
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="disclaimer">
+      <strong>Disclaimer:</strong> This eligibility decision is generated by an AI model trained on historical loan data. It is for informational purposes only and does not constitute a guarantee of loan approval by any bank or financial institution. Final approval is subject to the bank's own verification, documentation review, and credit bureau checks.
+    </div>
+
+  </div>
+
+  <footer style="background:#0f172a; color:#475569; text-align:center; padding:28px 24px; font-size:0.82rem; margin-top: 0;">
+    &copy; 2025 SmartLender &middot; <a href="{{ url_for('loan_info') }}" style="color:#94a3b8; text-decoration:none;">Loan Guide</a>
+  </footer>
+
+  <!-- Disable browser back button to prevent accidental re-submission -->
+  <script>
+    // Push a new history state so back button doesn't re-submit the form
+    history.pushState(null, '', window.location.href);
+    window.addEventListener('popstate', function () {
+      history.pushState(null, '', window.location.href);
+    });
+  </script>
+</body>
+</html>
